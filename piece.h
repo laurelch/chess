@@ -18,11 +18,12 @@ class Piece{
         int getRole() const;
         std::string printRole() const;
         std::string printRoleShort() const;
-        int countMoves() const;
         void move(int,int);
+        int getMoves() const;
         void setPosition(int,int);
-        void getPosition(int*,int*);
+        void getPosition(int&,int&);
         void promotion(int);
+        void empty();
         
     protected:
         int player=0;
@@ -38,7 +39,7 @@ int Piece::getPlayer() const{
 
 std::string Piece::printPlayer() const{
     if(player==1){return "w";}
-    else if(player==2){return "b";}
+    else if(player==-1){return "b";}
     return {};
 }
 
@@ -66,12 +67,13 @@ std::string Piece::printRoleShort() const{
     return {};
 }
 
-int Piece::countMoves() const{
-    return moves;
-}
-
 void Piece::move(int f,int r){
     Piece::setPosition(f,r);
+    ++moves;
+}
+
+int Piece::getMoves() const{
+    return moves;
 }
 
 void Piece::setPosition(int f,int r){
@@ -79,12 +81,18 @@ void Piece::setPosition(int f,int r){
     rank=r;
 }
 
-void Piece::getPosition(int* f,int* r){
-    *f=file;
-    *r=rank;
+void Piece::getPosition(int &f,int &r){
+    f=file;
+    r=rank;
 }
 
 void Piece::promotion(int r_new){
     if(role==P)role=r_new;
+}
+
+void Piece::empty(){
+    player=0;
+    role=0;
+    moves=0;
 }
 #endif

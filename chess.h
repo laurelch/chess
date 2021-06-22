@@ -21,7 +21,7 @@ class Chess{
         Board board;
         bool end=false;
         int stepcount=0;
-        int player=0; //white=player 1, black=player 2
+        int player=0; //white=player 1, black=player -1
 };
 
 void Chess::play(){
@@ -42,12 +42,13 @@ void Chess::play(){
             getline(cin,user_input);
         }
         ++stepcount;
-        player=(player+1)%2;
+        player=-player;
+        board.print();
     }
     if(player==1){
         std::cout<<"White wins"<<std::endl;
         exit(0);
-    }else if(player==2){
+    }else if(player==-1){
         std::cout<<"Black wins"<<std::endl;
         exit(0);
     }
@@ -83,8 +84,8 @@ bool Chess::validUserInput(string user_input){
     Piece to=board.getPiece(f2,r2);
     if(from.getPlayer()!=player){
         std::cout<<"Chess::validUserInput 5"<<std::endl;
-        return false;    
-    }else if(to.getPlayer()!=0&&to.getPlayer()!=3-player){
+        return false;
+    }else if(to.getPlayer()!=0&&to.getPlayer()!=-player){
         std::cout<<"Chess::validUserInput 6"<<std::endl;
         return false;
     }
@@ -98,7 +99,7 @@ void Chess::printBoard(){
 string Chess::printPlayer(){
     if(player==1){
         return "White";
-    }else if(player==2){
+    }else if(player==-1){
         return "Black";
     }
     return {};
