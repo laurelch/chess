@@ -46,10 +46,10 @@ void Board::init(){
             else if(file==int('e')){role=K;}
             if(player!=0){
                 Piece piece(player,role);
-                piece.setPosition(file,rank);
+                piece.move(file,rank);
                 initialBoard.push_back(piece);
             }else{
-                piece.setPosition(file,rank);
+                piece.move(file,rank);
                 initialBoard.push_back(piece);
             }
         }
@@ -168,10 +168,21 @@ bool Board::emptyBetween(Piece* from,Piece* to){
 }
 
 bool Board::moveBishop(Piece* from,Piece* to){
+    int f1=0,r1=0,f2=0,r2=0;
+    from->getPosition(f1,r1);
+    to->getPosition(f2,r2);
+    cout<<"Board::moveBishop f1="<<f1<<", r1="<<r1<<", f2="<<f2<<", r2="<<r2<<endl;
+    if(abs(f1-f2)==abs(r1-r2)){return true;}
     return false;
 }
 
 bool Board::moveKing(Piece* from,Piece* to){
+    int f1=0,r1=0,f2=0,r2=0;
+    from->getPosition(f1,r1);
+    to->getPosition(f2,r2);
+    cout<<"Board::moveBishop f1="<<f1<<", r1="<<r1<<", f2="<<f2<<", r2="<<r2<<endl;
+    if(abs(f1-f2)<=1){return true;}
+    else if(abs(r1-r2)<=1){return true;}
     return false;
 }
 
@@ -192,14 +203,33 @@ bool Board::movePawn(Piece* from,Piece* to){
 }
 
 bool Board::moveQueen(Piece* from,Piece* to){
+    int f1=0,r1=0,f2=0,r2=0;
+    from->getPosition(f1,r1);
+    to->getPosition(f2,r2);
+    cout<<"Board::moveQueen f1="<<f1<<", r1="<<r1<<", f2="<<f2<<", r2="<<r2<<endl;
+    if(f1==f2&&r1!=r2){return true;}
+    else if(f1!=f2&&r1==r2){return true;}
+    else if(abs(f1-f2)==abs(r1-r2)){return true;}
     return false;
 }
 
 bool Board::moveRook(Piece* from,Piece* to){
+    int f1=0,r1=0,f2=0,r2=0;
+    from->getPosition(f1,r1);
+    to->getPosition(f2,r2);
+    cout<<"Board::moveRook f1="<<f1<<", r1="<<r1<<", f2="<<f2<<", r2="<<r2<<endl;
+    if(f1==f2&&r1!=r2){return true;}
+    else if(f1!=f2&&r1==r2){return true;}
     return false;
 }
 
 bool Board::moveKnight(Piece* from,Piece* to){
+    int f1=0,r1=0,f2=0,r2=0;
+    from->getPosition(f1,r1);
+    to->getPosition(f2,r2);
+    cout<<"Board::moveKnight f1="<<f1<<", r1="<<r1<<", f2="<<f2<<", r2="<<r2<<endl;
+    if(abs(f1-f2)==1&&abs(r1-r2)==2){return true;}
+    else if(abs(f1-f2)==2&&abs(r1-r2)==1){return true;}
     return false;
 }
 #endif
