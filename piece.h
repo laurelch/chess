@@ -20,6 +20,7 @@ class Piece{
         std::string printRoleShort() const;
         void move(int,int);
         int getMoves() const;
+        void setMoves(int);
         void setPosition(int,int);
         void getPosition(int&,int&);
         void promotion(int);
@@ -28,7 +29,7 @@ class Piece{
     protected:
         int player=0;
         int role=0;
-        int moves=0;
+        int moves=-1;
         int file=0;
         int rank=0;
 };
@@ -74,6 +75,10 @@ void Piece::move(int f,int r){
 
 int Piece::getMoves() const{
     return moves;
+}
+
+void Piece::setMoves(int m){
+    moves=m;
 }
 
 void Piece::setPosition(int f,int r){

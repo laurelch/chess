@@ -7,6 +7,7 @@
 using namespace std;
 class Board{
     std::vector<Piece> board;
+    int lastPiece;
     public:
         Board(){
             init();
@@ -16,13 +17,14 @@ class Board{
         void move();
         void illegal(string) const;
         Piece getPiece(int,int) const;
+        int lastMoved() const;
         int getIndex(int,int) const;
         bool isEmpty(int f,int r) const;
         bool emptyBetween(Piece*,Piece*);
         bool move(string);
         bool moveBishop(Piece*,Piece*);
         bool moveKing(Piece*,Piece*);
-        bool movePawn(Piece*,Piece*);
+        bool movePawn(Piece*,Piece*,int);
         bool moveQueen(Piece*,Piece*);
         bool moveRook(Piece*,Piece*);
         bool moveKnight(Piece*,Piece*);
@@ -94,6 +96,8 @@ bool Board::move(string user_input){
     Piece from=getPiece(f1,r1);
     int role=from.getRole();
     Piece to=getPiece(f2,r2);
+    int promoteTo=0;
+    if(user_input.size()==7){promoteTo=user_input[6];}
     bool succeed=false;
     std::cout<<"Board::move role="<<role<<std::endl;
     if(role!=N&&!emptyBetween(&from,&to)){
@@ -107,7 +111,7 @@ bool Board::move(string user_input){
             succeed=moveKing(&from,&to);
             break;
         case P:
-            succeed=movePawn(&from,&to);
+            succeed=movePawn(&from,&to,promoteTo);
             break;
         case Q:
             succeed=moveQueen(&from,&to);
@@ -124,11 +128,14 @@ bool Board::move(string user_input){
     if(succeed){
         int index1=getIndex(f1,r1);
         to.setPosition(f1,r1);
+        int moves=to.getMoves();
         to.empty();
         int index2=getIndex(f2,r2);
         from.setPosition(f2,r2);
+        from.setMoves(moves);
         board[index1]=to;
         board[index2]=from;
+        lastPiece=index2;
     }
     return succeed;
 }
@@ -137,6 +144,10 @@ Piece Board::getPiece(int f,int r) const{
     int index=getIndex(f,r);
     // std::cout<<"Board::getPiece index="<<index<<std::endl;
     return board[index];
+}
+
+int Board::lastMoved() const{
+    return lastPiece;
 }
 
 int Board::getIndex(int f,int r) const{
@@ -186,15 +197,31 @@ bool Board::moveKing(Piece* from,Piece* to){
     return false;
 }
 
-bool Board::movePawn(Piece* from,Piece* to){
+bool Board::movePawn(Piece* from,Piece* to,int promoteTo){
     int f1=0,r1=0,f2=0,r2=0;
     from->getPosition(f1,r1);
     to->getPosition(f2,r2);
-    cout<<"Board::movePawn f1="<<f1<<", r1="<<r1<<", f2="<<f2<<", r2="<<r2<<endl;
+    cout<<"Board::movePawn f1="<<f1<<", r1="<<r1<<", f2="<<f2<<", r2="<<r2<<", moves="<<from->getMoves()<<endl;
     int player=from->getPlayer();
-    if(from->getMoves()==0){
-        if(f1==f2){
-            if(r2-r1==player||r2-r1==2*player){return true;}
+    //promotion
+    if((player==1&&r2==8)||(player==-1&&r2==1)){
+        if(promoteTo!=0){from->promotion(promoteTo);}
+        else{from->promotion(Q);}
+    }
+    //basic movement
+    if(from->getMoves()==0&&f1==f2){
+        if(r2-r1==player||r2-r1==2*player){return true;}
+    }else if(((player==1&&r1==5)||(player==-1&&r1==4))&&abs(f2-f1)==1){
+        //en passant
+        Piece last=board[lastMoved()];
+        int role=last.getRole();
+        int f3=0;
+        int r3=0;
+        last.getPosition(f3,r3);
+        if(role==P&&f2==f3&&(r2==r3||r2==r3+player)){
+            last.empty();
+            board[lastMoved()]=last;
+            return true;
         }
     }else{
         if(f1==f2&&r2-r1==player){return true;}
