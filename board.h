@@ -5,6 +5,7 @@
 #include "piece.h"
 #define BOARD_SIZE 8
 using namespace std;
+
 class Board{
     std::vector<Piece> board;
     std::vector<Piece> offBoardWhite;
@@ -12,12 +13,14 @@ class Board{
     int lastPiece;
     int whiteKing;
     int blackKing;
+    bool verbose=false;
     public:
         Board(){
             init();
         }
         void init();
         void print() const;
+        void setVerbose(bool);
         void illegal(string) const;
         Piece getPiece(int,int) const;
         Piece getPiece(int) const;
@@ -37,6 +40,7 @@ class Board{
         bool moveKnight(Piece*,Piece*) const;
         bool moveRole(int,Piece*,Piece*,int);
         void afterMove(Piece*);
+        void printNotice(string) const;
         bool check(Piece*);
         bool checkmate() const;
         bool stalemate() const;
@@ -76,7 +80,8 @@ void Board::init(){
 
 //print current board
 void Board::print() const{
-    std::cout<<"___________________________"<<std::endl;
+    for(int i=0;i<27;++i)std::cout<<"-";
+    std::cout<<std::endl;
     for(int i=0;i<offBoardWhite.size();++i){
         if(i==0)std::cout<<"Captured by Black: ";
         std::cout<<offBoardWhite[i].printPlayer()<<offBoardWhite[i].printRoleShort()<<" ";
@@ -91,6 +96,7 @@ void Board::print() const{
                 std::cout<<"__|";
             }else{
                 std::cout<<board[index].printPlayer()<<board[index].printRoleShort()<<'|';
+                // std::cout<<board[index].printUnicode()<<'|';
             }
         }
         std::cout<<i+1<<std::endl;
@@ -101,7 +107,13 @@ void Board::print() const{
         if(i==0)std::cout<<"Captured by White: ";
         std::cout<<offBoardBlack[i].printPlayer()<<offBoardBlack[i].printRoleShort()<<" ";
     }
-    std::cout<<std::endl<<"___________________________"<<std::endl;
+    std::cout<<std::endl;
+    for(int i=0;i<27;++i)std::cout<<"-";
+    std::cout<<std::endl;
+}
+
+void Board::setVerbose(bool v){
+    verbose=v;
 }
 
 void Board::illegal(string info="") const{
@@ -196,6 +208,7 @@ bool Board::move(string user_input){
         board[index_to]=from;
         lastPiece=index_to;
         if(from.getRole()==K){setKing(from.getPlayer(),index_to);}
+        afterMove(&from);
     }
     return succeed;
 }
@@ -204,7 +217,7 @@ bool Board::moveBishop(Piece* from,Piece* to) const{
     int f1=0,r1=0,f2=0,r2=0;
     from->getPosition(f1,r1);
     to->getPosition(f2,r2);
-    cout<<"Board::moveBishop f1="<<f1<<", r1="<<r1<<", f2="<<f2<<", r2="<<r2<<endl;
+    if(verbose)cout<<"Board::moveBishop f1="<<f1<<", r1="<<r1<<", f2="<<f2<<", r2="<<r2<<endl;
     if(abs(f1-f2)==abs(r1-r2)){return true;}
     return false;
 }
@@ -213,7 +226,7 @@ bool Board::moveKing(Piece* from,Piece* to){
     int f1=0,r1=0,f2=0,r2=0;
     from->getPosition(f1,r1);
     to->getPosition(f2,r2);
-    cout<<"Board::moveKing f1="<<f1<<", r1="<<r1<<", f2="<<f2<<", r2="<<r2<<", moves="<<from->getMoves()<<endl;
+    if(verbose)cout<<"Board::moveKing f1="<<f1<<", r1="<<r1<<", f2="<<f2<<", r2="<<r2<<", moves="<<from->getMoves()<<endl;
     //basic
     if(abs(f1-f2)<=1&&abs(r1-r2)<=1){return true;}
     //castling
@@ -222,10 +235,10 @@ bool Board::moveKing(Piece* from,Piece* to){
         int f_rook=0;
         if(way>0){f_rook=int('h');}else{f_rook=int('a');}
         Piece rook=getPiece(f_rook,r1);
-        if(rook.getMoves()!=0){cout<<"Board::moveKing 1"<<endl;return false;}
+        if(verbose){if(rook.getMoves()!=0){cout<<"Board::moveKing 1"<<endl;return false;}}
         for(int f=f1+way;f!=f_rook;f+=way){
             Piece tmp=getPiece(f,r1);
-            if(tmp.getPlayer()!=0){cout<<"Board::moveKing 2"<<endl;return false;}
+            if(verbose){if(tmp.getPlayer()!=0){cout<<"Board::moveKing 2"<<endl;return false;}}
         }
         int f_rook2=f1+way;
         int index_cross=getIndex(f_rook2,r1);
@@ -242,7 +255,7 @@ bool Board::movePawn(Piece* from,Piece* to,int promoteTo){
     int f1=0,r1=0,f2=0,r2=0;
     from->getPosition(f1,r1);
     to->getPosition(f2,r2);
-    cout<<"Board::movePawn f1="<<f1<<", r1="<<r1<<", f2="<<f2<<", r2="<<r2<<", moves="<<from->getMoves()<<endl;
+    if(verbose)cout<<"Board::movePawn f1="<<f1<<", r1="<<r1<<", f2="<<f2<<", r2="<<r2<<", moves="<<from->getMoves()<<endl;
     int player=from->getPlayer();
     //promotion
     if((player==1&&r2==8)||(player==-1&&r2==1)){
@@ -286,7 +299,7 @@ bool Board::moveRook(Piece* from,Piece* to) const{
     int f1=0,r1=0,f2=0,r2=0;
     from->getPosition(f1,r1);
     to->getPosition(f2,r2);
-    cout<<"Board::moveRook f1="<<f1<<", r1="<<r1<<", f2="<<f2<<", r2="<<r2<<endl;
+    if(verbose)cout<<"Board::moveRook f1="<<f1<<", r1="<<r1<<", f2="<<f2<<", r2="<<r2<<endl;
     if(f1==f2&&r1!=r2){return true;}
     else if(f1!=f2&&r1==r2){return true;}
     return false;
@@ -296,7 +309,7 @@ bool Board::moveKnight(Piece* from,Piece* to) const{
     int f1=0,r1=0,f2=0,r2=0;
     from->getPosition(f1,r1);
     to->getPosition(f2,r2);
-    cout<<"Board::moveKnight f1="<<f1<<", r1="<<r1<<", f2="<<f2<<", r2="<<r2<<endl;
+    if(verbose)cout<<"Board::moveKnight f1="<<f1<<", r1="<<r1<<", f2="<<f2<<", r2="<<r2<<endl;
     if(abs(f1-f2)==1&&abs(r1-r2)==2){return true;}
     else if(abs(f1-f2)==2&&abs(r1-r2)==1){return true;}
     return false;
@@ -328,13 +341,27 @@ bool Board::moveRole(int role,Piece* from,Piece* to,int promoteTo){
 void Board::afterMove(Piece* from){
     if(check(from)){
         if(checkmate()){
-            std::cout<<"Checkmate"<<std::endl;
+            printNotice("Checkmate");
         }else{
-            std::cout<<"Check"<<std::endl;
+            printNotice("Check");
         }
     }else if(stalemate()){
-            std::cout<<"Stalemate"<<std::endl;
+        printNotice("Stalemate");
     }
+}
+
+void Board::printNotice(string info) const{
+    int lineWidth=27;
+    for(int i=0;i<lineWidth;++i)std::cout<<"_";
+    std::cout<<std::endl;
+    int space=(lineWidth-info.size()-1)/2;
+    std::cout<<"|";
+    for(int i=0;i<space;++i)std::cout<<" ";
+    std::cout<<info;
+    for(int i=0;i<space;++i)std::cout<<" ";
+    std::cout<<"|"<<std::endl;
+    for(int i=0;i<lineWidth;++i)std::cout<<"‾";
+    std::cout<<std::endl;
 }
 
 bool Board::check(Piece* last){

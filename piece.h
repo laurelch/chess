@@ -18,6 +18,7 @@ class Piece{
         int getRole() const;
         std::string printRole() const;
         std::string printRoleShort() const;
+        std::string printUnicode() const;
         void move(int,int);
         int getMoves() const;
         void setMoves(int);
@@ -65,6 +66,25 @@ std::string Piece::printRoleShort() const{
     else if(role==B){return "B";}
     else if(role==Q){return "Q";}
     else if(role==K){return "K";}
+    return {};
+}
+
+std::string Piece::printUnicode() const{
+    if(player==-1){
+        if(role==B){return "♝";}
+        if(role==K){return "♚";}
+        if(role==P){return "♟";}
+        if(role==Q){return "♛";}
+        if(role==R){return "♜";}
+        if(role==N){return "♞";}
+    }else if(player==1){
+        if(role==B){return "♗";}
+        if(role==K){return "♔";}
+        if(role==P){return "♙";}
+        if(role==Q){return "♕";}
+        if(role==R){return "♖";}
+        if(role==N){return "♘";}
+    }
     return {};
 }
 
