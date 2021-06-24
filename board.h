@@ -99,7 +99,7 @@ bool Board::move(string user_input){
     int promoteTo=0;
     if(user_input.size()==7){promoteTo=user_input[6];}
     bool succeed=false;
-    std::cout<<"Board::move role="<<role<<std::endl;
+    // std::cout<<"Board::move role="<<role<<std::endl;
     if(role!=N&&!emptyBetween(&from,&to)){
         return false;
     }
@@ -126,16 +126,14 @@ bool Board::move(string user_input){
             return false;
     }
     if(succeed){
-        int index1=getIndex(f1,r1);
-        to.setPosition(f1,r1);
-        int moves=to.getMoves();
         to.empty();
-        int index2=getIndex(f2,r2);
-        from.setPosition(f2,r2);
-        from.setMoves(moves);
-        board[index1]=to;
-        board[index2]=from;
-        lastPiece=index2;
+        to.setPosition(f1,r1);
+        from.move(f2,r2);
+        int index_from=getIndex(f1,r1);
+        int index_to=getIndex(f2,r2);
+        board[index_from]=to;
+        board[index_to]=from;
+        lastPiece=index_to;
     }
     return succeed;
 }
@@ -168,7 +166,7 @@ bool Board::emptyBetween(Piece* from,Piece* to){
     int f1=0,r1=0,f2=0,r2=0;
     from->getPosition(f1,r1);
     to->getPosition(f2,r2);
-    std::cout<<"Board::emptyBetween "<<f1<<","<<f2<<","<<r1<<","<<r2<<std::endl;
+    // std::cout<<"Board::emptyBetween "<<f1<<","<<f2<<","<<r1<<","<<r2<<std::endl;
     int fstep=f2-f1;
     int rstep=r2-r1;
     for(int i=f1,j=r1;i!=f2||j!=r2;i+=fstep,j+=rstep){
@@ -191,9 +189,32 @@ bool Board::moveKing(Piece* from,Piece* to){
     int f1=0,r1=0,f2=0,r2=0;
     from->getPosition(f1,r1);
     to->getPosition(f2,r2);
-    cout<<"Board::moveBishop f1="<<f1<<", r1="<<r1<<", f2="<<f2<<", r2="<<r2<<endl;
-    if(abs(f1-f2)<=1){return true;}
-    else if(abs(r1-r2)<=1){return true;}
+    cout<<"Board::moveKing f1="<<f1<<", r1="<<r1<<", f2="<<f2<<", r2="<<r2<<", moves="<<from->getMoves()<<endl;
+    //basic
+    if(abs(f1-f2)<=1&&abs(r1-r2)<=1){return true;}
+    //castling
+    else if(from->getMoves()==0&&abs(f1-f2)==2){
+        int way=(f2-f1)/2;
+        int f_rook=0;
+        if(way>0){f_rook=int('h');}else{f_rook=int('a');}
+        Piece rook=getPiece(f_rook,r1);
+        if(rook.getMoves()!=0){cout<<"Board::moveKing 1"<<endl;return false;}
+        for(int f=f1+way;f!=f_rook;f+=way){
+            Piece tmp=getPiece(f,r1);
+            if(tmp.getPlayer()!=0){cout<<"Board::moveKing 2"<<endl;return false;}
+        }
+        int f_rook2=f1+way;
+        Piece cross=getPiece(f_rook2,r1);
+        cross.setPosition(f_rook,r1);
+        cross.empty();
+        cross.setMoves(0);
+        rook.setPosition(f_rook2,r1);
+        int index_cross=getIndex(f_rook2,r1);
+        int index_rook=getIndex(f_rook,r1);
+        board[index_cross]=rook;
+        board[index_rook]=cross;
+        return true;
+    }
     return false;
 }
 
@@ -208,7 +229,7 @@ bool Board::movePawn(Piece* from,Piece* to,int promoteTo){
         if(promoteTo!=0){from->promotion(promoteTo);}
         else{from->promotion(Q);}
     }
-    //basic movement
+    //basic
     if(from->getMoves()==0&&f1==f2){
         if(r2-r1==player||r2-r1==2*player){return true;}
     }else if(((player==1&&r1==5)||(player==-1&&r1==4))&&abs(f2-f1)==1){
