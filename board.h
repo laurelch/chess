@@ -92,7 +92,7 @@ void Board::print() const{
         std::cout<<i+1<<"|";
         for(int j=0;j<BOARD_SIZE;++j){
             const int index=i*BOARD_SIZE+j;
-            if(board[index].printPlayer().empty()){
+            if(board[index].isEmpty()){
                 std::cout<<"__|";
             }else{
                 std::cout<<board[index].printPlayer()<<board[index].printRoleShort()<<'|';
@@ -200,7 +200,7 @@ bool Board::move(string user_input){
         int index_to=getIndex(f2,r2);
         int player=from.getPlayer();
         addEmpty(index_from);
-        if(to.getPlayer()!=0){
+        if(!to.isEmpty()){
             if(player==1){offBoardBlack.push_back(to);}
             else if(player==-1){offBoardWhite.push_back(to);}
         }
@@ -263,7 +263,7 @@ bool Board::movePawn(Piece* from,Piece* to,int promoteTo){
         else{from->promotion(Q);}
     }
     //basic
-    if(from->getMoves()==0&&f1==f2){
+    if(from->getMoves()==0&&f1==f2&&to->isEmpty()){
         if(r2-r1==player||r2-r1==2*player){return true;}
     }else if(((player==1&&r1==5)||(player==-1&&r1==4))&&abs(f2-f1)==1){
         //en passant
@@ -279,7 +279,7 @@ bool Board::movePawn(Piece* from,Piece* to,int promoteTo){
             return true;
         }
     }else{
-        if(f1==f2&&r2-r1==player){return true;}
+        if(abs(f1-f2)==1&&r2-r1==player&&!to->isEmpty()){return true;}
     }
     return false;
 }

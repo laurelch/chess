@@ -85,7 +85,7 @@ bool Chess::validUserInput(string user_input){
     if(from.getPlayer()!=player){
         std::cout<<"Chess::validUserInput 5"<<std::endl;
         return false;
-    }else if(to.getPlayer()!=0&&to.getPlayer()!=-player){
+    }else if(!to.isEmpty()&&to.getPlayer()!=-player){
         std::cout<<"Chess::validUserInput 6"<<std::endl;
         return false;
     }

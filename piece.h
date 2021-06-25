@@ -26,6 +26,7 @@ class Piece{
         void getPosition(int&,int&);
         void promotion(int);
         void empty();
+        bool isEmpty() const;
         
     protected:
         int player=0;
@@ -120,4 +121,9 @@ void Piece::empty(){
     role=0;
     moves=0;
 }
+
+bool Piece::isEmpty() const{
+    return player==0;
+}
+
 #endif
