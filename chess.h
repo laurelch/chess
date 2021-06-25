@@ -44,14 +44,9 @@ void Chess::play(){
         ++stepcount;
         player=-player;
         board.print();
+        end=board.isGameOver();
     }
-    if(player==1){
-        std::cout<<"White wins"<<std::endl;
-        exit(0);
-    }else if(player==-1){
-        std::cout<<"Black wins"<<std::endl;
-        exit(0);
-    }
+    board.printNotice(board.getGameOverMessage());
 }
 
 bool Chess::validUserInput(string user_input){

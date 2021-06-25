@@ -7,6 +7,7 @@
 #define Q 81 // Queen
 #define R 82 // Rook
 #define N 110 // Knight
+
 class Piece{
     public:
         Piece(int p,int r):player{p},role{r}

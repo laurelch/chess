@@ -1,6 +1,4 @@
 #include "chess.h"
-#include "board.h"
-#include "piece.h"
 
 int main(int argc, char const *argv[])
 {
