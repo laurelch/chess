@@ -7,6 +7,7 @@
 #define Q 81 // Queen
 #define R 82 // Rook
 #define N 110 // Knight
+#define BOARD_SIZE 8
 using namespace std;
 
 class Piece{
@@ -18,6 +19,7 @@ class Piece{
         int getPlayer() const;
         string printPlayer() const;
         int getRole() const;
+        int getIndex() const;
         string printRole() const;
         string printRoleShort() const;
         string printUnicode() const;
@@ -61,6 +63,12 @@ string Piece::printPlayer() const{
 
 int Piece::getRole() const{
     return role;
+}
+
+int Piece::getIndex() const{
+    int f=file-'a';
+    int r=rank-1;
+    return r*BOARD_SIZE+f;
 }
 
 string Piece::printRole() const{
@@ -129,8 +137,8 @@ bool Piece::isEmpty() const{
 void Piece::directionalMoves(vector<vector<int>> &moves,int f_dir,int r_dir){
     vector<int> dir_moves{};
     for(int i=0;i<8;++i){
-        int f_new=file+f_dir;
-        int r_new=rank+r_dir;
+        int f_new=file+i*f_dir;
+        int r_new=rank+i*r_dir;
         if(inRange(f_new,r_new)){dir_moves.push_back(f_new);dir_moves.push_back(r_new);}
         else break;
     }
@@ -158,6 +166,9 @@ vector<vector<int>> Piece::potentialMoves(){
             return potentialRookMoves();
         case N:
             return potentialKnightMoves();
+        default:
+            cout<<"Role incorrect"<<endl;
+            break;
     }
     return vector<vector<int>>{};
 }
@@ -199,7 +210,7 @@ vector<vector<int>> Piece::potentialPawnMoves(){
 vector<vector<int>> Piece::potentialQueenMoves(){
     vector<vector<int>> moves{};
     for(int i=-1;i<=1;++i){
-        for(int j=-1;j<=1;++i){
+        for(int j=-1;j<=1;++j){
             if(i==0&&j==0)continue;
             directionalMoves(moves,i,j);
         }
