@@ -8,6 +8,8 @@ using namespace std;
 
 class Board{
     std::vector<Piece> board;
+    // std::vector<Piece> onBoardWhite;
+    // std::vector<Piece> onBoardBlack;
     std::vector<Piece> offBoardWhite;
     std::vector<Piece> offBoardBlack;
     int lastPiece;
@@ -22,15 +24,17 @@ class Board{
         void print() const;
         void setVerbose(bool);
         void illegal(string) const;
+        bool inRange(int f,int r) const{return f>='a'&&f<='h'&&r>=1&&r<=8;}
         Piece getPiece(int,int) const;
         Piece getPiece(int) const;
         int getKing(int) const;
         void setKing(int,int);
         int lastMoved() const;
         int getIndex(int,int) const;
-        bool inRange(int,int) const;
+        void getFileRank(int,int&,int&) const;
         bool isEmpty(int,int) const;
         void addEmpty(int);
+        void addEmpty(int,int);
         bool emptyBetween(Piece*,Piece*) const;
         bool move(string);
         bool moveBishop(Piece*,Piece*) const;
@@ -39,17 +43,17 @@ class Board{
         bool moveQueen(Piece*,Piece*) const;
         bool moveRook(Piece*,Piece*) const;
         bool moveKnight(Piece*,Piece*) const;
-        bool moveRole(int,Piece*,Piece*,int);
+        bool moveRole(Piece*,Piece*,int);
         void afterMove(Piece*);
+        // prints a block of important message
         void printNotice(string) const;
         bool check(Piece*);
         bool checkmate(Piece*);
-        bool stalemate() const;
+        bool stalemate(Piece*);
         bool isGameOver() const;
         std::string getGameOverMessage() const;
 };
 
-//initialize board
 void Board::init(){
     verbose=false;
     gameOver=false;
@@ -74,6 +78,8 @@ void Board::init(){
                 Piece piece(player,role);
                 piece.move(file,rank);
                 initialBoard.push_back(piece);
+                // if(player==1)onBoardWhite.push_back(piece);
+                // else if(player==-1)onBoardBlack.push_back(piece);
             }else{
                 piece.move(file,rank);
                 initialBoard.push_back(piece);
@@ -83,7 +89,6 @@ void Board::init(){
     board=initialBoard;
 }
 
-//print current board
 void Board::print() const{
     for(int i=0;i<27;++i)std::cout<<"-";
     std::cout<<std::endl;
@@ -161,9 +166,12 @@ int Board::getIndex(int f,int r) const{
     return rank*BOARD_SIZE+file;
 }
 
-bool Board::inRange(int f,int r) const{
-    return f>='a'&&f<='h'&&r>=1&&r<=8;
+void Board::getFileRank(int index,int &f,int &r) const{
+    f=index%BOARD_SIZE+'a';
+    r=index/BOARD_SIZE+1;
 }
+
+
 
 bool Board::isEmpty(int f,int r) const{
     int index=getIndex(f,r);
@@ -174,7 +182,16 @@ bool Board::isEmpty(int f,int r) const{
 }
 
 void Board::addEmpty(int index){
+    int f=0;
+    int r=0;
+    getFileRank(index,f,r);
+    addEmpty(f,r);
+}
+
+void Board::addEmpty(int f,int r){
+    int index=getIndex(f,r);
     Piece empty{};
+    empty.move(f,r);
     board[index]=empty;
 }
 
@@ -183,14 +200,18 @@ bool Board::emptyBetween(Piece* from,Piece* to) const{
     int f1=0,r1=0,f2=0,r2=0;
     from->getPosition(f1,r1);
     to->getPosition(f2,r2);
-    if(verbose)std::cout<<"Board::emptyBetween "<<char(f1)<<r1<<"=>"<<char(f2)<<r2<<std::endl;
+    std::cout<<"Board::emptyBetween "<<char(f1)<<r1<<"=>"<<char(f2)<<r2<<std::endl;
     int fstep=f2-f1;
     int rstep=r2-r1;
     if(fstep>0){fstep=1;} else if(fstep<0){fstep=-1;}
     if(rstep>0){rstep=1;} else if(rstep<0){rstep=-1;}
     for(int i=f1,j=r1;i!=f2||j!=r2;i+=fstep,j+=rstep){
-        if(i==f1&&j==r1){continue;}
-        if(!isEmpty(i,j)){return false;}
+        if(i==f1&&j==r1)continue;
+        if(!inRange(i,j))break;
+        if(!isEmpty(i,j)){
+            std::cout<<"Board::emptyBetween "<<char(i)<<j<<" not empty."<<std::endl;
+            return false;
+        }
     }
     return true;
 }
@@ -205,13 +226,12 @@ bool Board::move(string user_input){
     int promoteTo=0;
     if(user_input.size()==7){promoteTo=user_input[6];}
     bool succeed=false;
-    // std::cout<<"Board::move role="<<role<<std::endl;
-    succeed=moveRole(from.getRole(),&from,&to,promoteTo);
+    succeed=moveRole(&from,&to,promoteTo);
     if(succeed){
         int index_from=getIndex(f1,r1);
         int index_to=getIndex(f2,r2);
         int player=from.getPlayer();
-        addEmpty(index_from);
+        addEmpty(f1,r1);
         if(!to.isEmpty()){
             if(player==1){offBoardBlack.push_back(to);}
             else if(player==-1){offBoardWhite.push_back(to);}
@@ -256,8 +276,8 @@ bool Board::moveKing(Piece* from,Piece* to){
         int index_cross=getIndex(f_rook2,r1);
         int index_rook=getIndex(f_rook,r1);
         board[index_cross]=rook;
-        addEmpty(index_rook);
-        addEmpty(getIndex(f1,r1));
+        addEmpty(f_rook,r1);
+        addEmpty(f1,r1);
         return true;
     }
     return false;
@@ -327,9 +347,13 @@ bool Board::moveKnight(Piece* from,Piece* to) const{
     return false;
 }
 
-bool Board::moveRole(int role,Piece* from,Piece* to,int promoteTo=Q){
-    if(from->getPlayer()==to->getPlayer()){return false;}
+bool Board::moveRole(Piece* from,Piece* to,int promoteTo=Q){
+    int role=from->getRole();
+    if(from->getPlayer()==to->getPlayer()){
+        // std::cout<<"Board::moveRole, same player's piece , role="<<char(role)<<std::endl;
+        return false;}
     if(role!=N&&!emptyBetween(from,to)){
+        // std::cout<<"Board::moveRole, not empty between, role="<<char(role)<<std::endl;
         return false;
     }
     switch(role){
@@ -360,11 +384,12 @@ void Board::afterMove(Piece* from){
         }else{
             printNotice("Check");
         }
-    }else if(stalemate()){
-        printNotice("Stalemate");
-        gameOver=true;
-        gameOverMessage="draw";
     }
+    // else if(stalemate(from)){
+    //     printNotice("Stalemate");
+    //     gameOver=true;
+    //     gameOverMessage="draw";
+    // }
 }
 
 void Board::printNotice(string info) const{
@@ -384,17 +409,16 @@ void Board::printNotice(string info) const{
 bool Board::check(Piece* last){
     Piece opponentKing=getPiece(getKing(-(last->getPlayer())));
     int promoteTo=Q;
-    if(moveRole(last->getRole(),last,&opponentKing,promoteTo)){return true;}
+    if(moveRole(last,&opponentKing,promoteTo)){return true;}
     return false;
 }
 
 bool Board::checkmate(Piece* last){
-    // check all possible moves of opponent's King
-    // see if any of my piece can capture opponent's King after a possible move
-    // setVerbose(true);
+    // check all possible moves of opponent's King, and see
+    // if any of my piece can capture opponent's King after any possible move
     int player=last->getPlayer();
     Piece opponentKing=getPiece(getKing(-player));
-    cout<<"Board::checkmate player="<<player<<" opponent's king index="<<getKing(-player)<<endl;
+    // if(verbose)cout<<"Board::checkmate player="<<player<<" opponent's king index="<<getKing(-player)<<endl;
     int f1=0;
     int r1=0;
     opponentKing.getPosition(f1,r1);
@@ -403,14 +427,18 @@ bool Board::checkmate(Piece* last){
         for(int r2=r1-1;r2<=r1+1;++r2){
             if((f2==f1&&r2==r1)||!inRange(f2,r2))continue;
             Piece to=getPiece(f2,r2);
-            if(verbose)cout<<"Board::checkmate "<<char(f1)<<r1<<"=>"<<char(f2)<<r2<<endl;
+            // if(verbose)cout<<"Board::checkmate "<<char(f1)<<r1<<"=>"<<char(f2)<<r2<<endl;
             bool canCapture=false;
-            // a possible move of opponent's King
-            if(moveRole(opponentKing.getRole(),&opponentKing,&to)){
+            // one possible move of opponent's King
+            if(moveRole(&opponentKing,&to)){
                 for(int i=0;i<board.size();++i){
                     Piece myPiece=getPiece(i);
                     if(myPiece.getPlayer()==player){
-                        if(moveRole(myPiece.getRole(),&myPiece,&to)){
+                        // if(moveRole(myPiece.getRole(),&myPiece,&to)){
+                        //     canCapture=true;
+                        //     break;
+                        // }
+                        if(check(&myPiece)){
                             canCapture=true;
                             break;
                         }
@@ -423,8 +451,9 @@ bool Board::checkmate(Piece* last){
     return true;
 }
 
-bool Board::stalemate() const{
-    return false;
+bool Board::stalemate(Piece* last){
+    // opponent is not in check, but all possible move of all piece will check
+    return true;
 }
 
 bool Board::isGameOver() const{
