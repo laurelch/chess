@@ -44,10 +44,10 @@ class Board{
         bool moveRole(Piece*,Piece*,int);
         bool moveBishop(Piece*,Piece*) const;
         bool moveKing(Piece*,Piece*);
+        bool moveKnight(Piece*,Piece*) const;
         bool movePawn(Piece*,Piece*,int);
         bool moveQueen(Piece*,Piece*) const;
         bool moveRook(Piece*,Piece*) const;
-        bool moveKnight(Piece*,Piece*) const;
         void afterMove(Piece*);
         // prints a block of important message
         void printNotice(string) const;
@@ -275,7 +275,6 @@ bool Board::tentativeMove(Piece* from,Piece* to,int promoteTo=Q){
         from->move(f2,r2);
         int index_to=to->getIndex();
         board[index_to]=*from;
-        lastPiece=index_to;
         if(checked(player)){
             board=boardCopy;
             return false;
@@ -350,6 +349,16 @@ bool Board::moveKing(Piece* from,Piece* to){
     return false;
 }
 
+bool Board::moveKnight(Piece* from,Piece* to) const{
+    int f1=0,r1=0,f2=0,r2=0;
+    from->getPosition(f1,r1);
+    to->getPosition(f2,r2);
+    if(verbose)cout<<"Board::moveKnight "<<f1<<char(f1)<<r1<<"=>"<<char(f2)<<r2<<endl;
+    if(abs(f1-f2)==1&&abs(r1-r2)==2){return true;}
+    else if(abs(f1-f2)==2&&abs(r1-r2)==1){return true;}
+    return false;
+}
+
 bool Board::movePawn(Piece* from,Piece* to,int promoteTo){
     int f1=0,r1=0,f2=0,r2=0;
     from->getPosition(f1,r1);
@@ -362,8 +371,12 @@ bool Board::movePawn(Piece* from,Piece* to,int promoteTo){
         else{from->promotion(Q);}
     }
     //basic
-    if(from->getMoves()==0&&f1==f2&&to->isEmpty()){
-        if(r2-r1==player||r2-r1==2*player){return true;}
+    if(f1==f2&&to->isEmpty()){
+        if(r2-r1==player){return true;}
+        if(from->getMoves()==0&&r2-r1==2*player){return true;}
+    }else if(abs(f1-f2)==1&&r2-r1==player&&!to->isEmpty()){
+        //capture opponent
+        return true;
     }else if(((player==1&&r1==5)||(player==-1&&r1==4))&&abs(f2-f1)==1){
         //en passant
         Piece last=getPiece(lastMoved());
@@ -377,8 +390,6 @@ bool Board::movePawn(Piece* from,Piece* to,int promoteTo){
             addEmpty(lastMoved());
             return true;
         }
-    }else{
-        if(abs(f1-f2)==1&&r2-r1==player&&!to->isEmpty()){return true;}
     }
     return false;
 }
@@ -401,16 +412,6 @@ bool Board::moveRook(Piece* from,Piece* to) const{
     if(verbose)cout<<"Board::moveRook "<<f1<<char(f1)<<r1<<"=>"<<char(f2)<<r2<<endl;
     if(f1==f2&&r1!=r2){return true;}
     else if(f1!=f2&&r1==r2){return true;}
-    return false;
-}
-
-bool Board::moveKnight(Piece* from,Piece* to) const{
-    int f1=0,r1=0,f2=0,r2=0;
-    from->getPosition(f1,r1);
-    to->getPosition(f2,r2);
-    if(verbose)cout<<"Board::moveKnight "<<f1<<char(f1)<<r1<<"=>"<<char(f2)<<r2<<endl;
-    if(abs(f1-f2)==1&&abs(r1-r2)==2){return true;}
-    else if(abs(f1-f2)==2&&abs(r1-r2)==1){return true;}
     return false;
 }
 

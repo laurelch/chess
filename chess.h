@@ -83,7 +83,7 @@ bool Chess::validUserInput(string user_input){
     if(user_input.length()==7){
         int promoteTo=int(user_input[6]);
         if(promoteTo!=B&&promoteTo!=Q&&promoteTo!=R&&promoteTo!=N){
-            std::cout<<"Chess::validUserInput 7"<<std::endl;
+            std::cout<<"Chess::validUserInput 7, promoteTo="<<promoteTo<<std::endl;
             return false;
         }
     }

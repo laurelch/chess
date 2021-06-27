@@ -3,10 +3,10 @@
 #include <string>
 #define B 66 // Bishop
 #define K 75 // King
+#define N 78 // Knight
 #define P 80 // Pawn
 #define Q 81 // Queen
 #define R 82 // Rook
-#define N 110 // Knight
 #define BOARD_SIZE 8
 using namespace std;
 
@@ -37,11 +37,11 @@ class Piece{
         void oneMove(vector<vector<int>>&,int,int);
         vector<vector<int>> potentialMoves();
         vector<vector<int>> potentialBishopMoves();
+        vector<vector<int>> potentialKnightMoves();
         vector<vector<int>> potentialKingMoves();
         vector<vector<int>> potentialPawnMoves();
         vector<vector<int>> potentialQueenMoves();
         vector<vector<int>> potentialRookMoves();
-        vector<vector<int>> potentialKnightMoves();
 
     protected:
         int player=0;
