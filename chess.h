@@ -22,6 +22,7 @@ class Chess{
         bool end=false;
         int stepcount=0;
         int player=0; //white=player 1, black=player -1
+        bool waitForDraw=false;
 };
 
 void Chess::play(){
@@ -30,13 +31,20 @@ void Chess::play(){
         string user_input;
         getline(cin,user_input);
         
+        string resign_str("resign");
+        if(user_input.compare(resign_str)==0){
+            if(player==1){board.printNotice("Black wins");}
+            else if(player==-1){board.printNotice("White wins");}
+            break;
+        }
+
         while(!validUserInput(user_input)){
             board.illegal("invalid input.");
             std::cout<<"not validUserInput"<<std::endl;
             std::cout<<printPlayer()<<" move: ";
             getline(cin,user_input);
         }
-
+        if(end)break;
         while(!board.move(user_input)){
             board.illegal("invalid move.");
             std::cout<<"cannot move"<<std::endl;
@@ -44,18 +52,30 @@ void Chess::play(){
             getline(cin,user_input);
         }
         ++stepcount;
-        player=-player;
         board.print();
         end=board.isGameOver();
+        player=-player;
     }
-    board.printNotice(board.getGameOverMessage());
+    if(board.getGameOverMessage().size()>0){
+        board.printNotice(board.getGameOverMessage());
+    }
 }
 
 bool Chess::validUserInput(string user_input){
-    if(user_input.length()!=5&&user_input.length()!=7){
+    int length=user_input.length();
+    if(length!=4&&length!=5&&length!=7&&length!=10&&length!=13){
         std::cout<<"Chess::validUserInput 1"<<std::endl;
         return false;
     }
+    if(length==4&&waitForDraw){
+        string draw_str("draw");
+        if(user_input.compare(draw_str)==0){
+            end=true;
+            board.printNotice(draw_str);
+            return true;
+        }
+    }
+
     int f1=int(user_input[0]);
     int r1=int(user_input[1]-'0');
     int f2=int(user_input[3]);
@@ -85,6 +105,12 @@ bool Chess::validUserInput(string user_input){
     }else if(!to.isEmpty()&&to.getPlayer()!=-player){
         std::cout<<"Chess::validUserInput 6"<<std::endl;
         return false;
+    }
+    if(length>=10){
+        size_t draw_pos=user_input.find("draw?");
+        if(draw_pos!=string::npos){waitForDraw=true;}
+    }else{
+        waitForDraw=false;
     }
     return true;
 }
