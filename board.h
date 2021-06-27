@@ -244,16 +244,16 @@ bool Board::move(int f1,int r1,int f2,int r2,int promoteTo=Q){
         addEmpty(f1,r1);
         from.move(f2,r2);
         board[index_to]=from;
-        lastPiece=index_to;
+        if(from.getRole()==K){setKing(player,index_to);}
         if(checked(player)){
             board=boardCopy;
             return false;
         }
-        if(from.getRole()==K){setKing(player,index_to);}
         if(!to.isEmpty()){
             if(player==1){offBoardBlack.push_back(to);}
             else if(player==-1){offBoardWhite.push_back(to);}
         }
+        lastPiece=index_to;
         afterMove(&from);
     }
     round+=0.5;
@@ -462,10 +462,13 @@ bool Board::checked(int player){
         //TODO: get all of one player's pieces on board
         if(opponentPiece.getPlayer()==-player){
             Piece myKing=getPiece(getKing(player));
-            if(!moveRole(&opponentPiece,&myKing)){return false;}
+            if(moveRole(&opponentPiece,&myKing)){
+                if(verbose)cout<<"Board::checked "<<opponentPiece.printFileRank()<<"=>"<<myKing.printFileRank()<<endl;
+                return true;
+            }
         }
     }
-    return true;
+    return false;
 }
 
 bool Board::checkmate(Piece* last){

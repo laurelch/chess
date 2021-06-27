@@ -39,15 +39,13 @@ void Chess::play(){
         }
 
         while(!validUserInput(user_input)){
-            board.illegal("invalid input.");
-            std::cout<<"not validUserInput"<<std::endl;
+            board.illegal("not validUserInput");
             std::cout<<printPlayer()<<" move: ";
             getline(cin,user_input);
         }
         if(end)break;
         while(!board.move(user_input)){
-            board.illegal("invalid move.");
-            std::cout<<"cannot move"<<std::endl;
+            board.illegal("cannot move.");
             std::cout<<printPlayer()<<" move: ";
             getline(cin,user_input);
         }

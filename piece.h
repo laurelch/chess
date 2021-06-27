@@ -16,6 +16,7 @@ class Piece{
         {}
         Piece(){}
         ~Piece(){}
+        string printFileRank() const;
         int getPlayer() const;
         string printPlayer() const;
         int getRole() const;
@@ -50,6 +51,10 @@ class Piece{
         int file=0;
         int rank=0;
 };
+
+string Piece::printFileRank() const{
+    return char(file)+to_string(rank);
+}
 
 int Piece::getPlayer() const{
     return player;
