@@ -1,9 +1,5 @@
-# Chess
-## Contents
-1. [Terminal](#chess-terminal) version: prints out board with terminal
-2. [Qt](chess-qt) version: GUI with Qt
-## Chess-Terminal
-### Board printed in Display waiting for user input to move:
+# Terminal-based Chess Game
+## Board printed in Display waiting for user input to move:
 - b - black, w - white
 - K - King
 - Q - Queen
@@ -29,7 +25,7 @@
         ---------------------------
         White move: <User Input>
 
-### Program detection:
+## Program detection:
 - Check
   - After a move, if it puts opponent's King under check, the program prints "Check".
 
@@ -49,7 +45,7 @@
         |        Stalemate        |
         ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
 
-### User input format:
+## User input format:
 - Accepts input of the form "FileRank FileRank".
   - The first "FileRank" indicates the coordinates of the piece to be moved, and the second indicates where to move it to.
   - For example, moving white Pawn e2 => e3: 
@@ -72,7 +68,7 @@
         ---------------------------
         White move: g7 g8 N
 
-### Ending the game:
+## Ending the game:
 - Resign:
   - A player can resign by entering "resign".
   - For example, white player resigns:
